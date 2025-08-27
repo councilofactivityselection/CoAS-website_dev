@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Current Activity - CoAS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+        
+        h1 {
+            margin-bottom: 10px;
+        }
+        
+        .date {
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+        
+        .activity-card {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .info {
+            opacity: 0.8;
+            margin-top: 30px;
+            font-style: italic;
+        }
+        
+        .source {
+            margin-top: 10px;
+            font-size: 0.8em;
+            opacity: 0.6;
+        }
+        
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #3498db;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        .error {
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.2);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold">Council of Activity Selection</h1>
+        <div class="date" id="currentDate"></div>
+        
+        <div class="activity-card">
+            <h2 class="text-xl font-semibold mb-4">Today's Activity</h2>
+            <div id="activityContent">
+                <div class="loader"></div>
+                <p>Loading activity from Netlify...</p>
+            </div>
+            <div id="errorContent" class="error" style="display: none;"></div>
+            <div class="source" id="dataSource"></div>
+        </div>
+        
+        <div class="info">
+            <p>Activity is set by the Council administrator</p>
+        </div>
+    </div>
+
+    <script>
+        // Update current date
+        function updateDate() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', options);
+        }
+        
+        // Load activity from Netlify only
+        async function loadActivity() {
+            try {
+                const response = await fetch('/.netlify/functions/retrieve-activity');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.activity) {
+                        displayActivity(data.activity, 'Netlify');
+                        return;
+                    } else {
+                        throw new Error('Invalid response format');
+                    }
+                } else {
+                    throw new Error('Server returned error status: ' + response.status);
+                }
+            } catch (error) {
+                displayError('Failed to load activity: ' + error.message);
+            }
+        }
+        
+        // Display the activity
+        function displayActivity(activityData, source) {
+            let html = '';
+            
+            if (activityData && activityData.activity && activityData.time) {
+                html = `
+                    <p><strong>Activity:</strong> ${activityData.activity}</p>
+                    <p><strong>Time:</strong> ${formatTime(activityData.time)}</p>
+                `;
+                
+                if (activityData.image) {
+                    html += `<img src="${activityData.image}" alt="Activity image" style="max-width: 100%; border-radius: 8px; margin-top: 15px;" onerror="this.style.display='none'">`;
+                }
+            } else {
+                html = '<p>No activity scheduled for today</p>';
+            }
+            
+            document.getElementById('activityContent').innerHTML = html;
+            document.getElementById('dataSource').textContent = `Data source: ${source}`;
+            document.getElementById('errorContent').style.display = 'none';
+        }
+        
+        // Display error message
+        function displayError(message) {
+            document.getElementById('activityContent').innerHTML = '<p>Failed to load activity</p>';
+            document.getElementById('errorContent').textContent = message;
+            document.getElementById('errorContent').style.display = 'block';
+            document.getElementById('dataSource').textContent = '';
+        }
+        
+        // Format time for display
+        function formatTime(time) {
+            if (!time) return '';
+            
+            let [hours, minutes] = time.split(':');
+            hours = parseInt(hours);
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            return `${hours}:${minutes} ${ampm}`;
+        }
+
+        // Initialize
+        updateDate();
+        loadActivity();
+        
+        // Check for updates every 10 seconds
+        setInterval(loadActivity, 10000);
+    </script>
+</body>
+</html>

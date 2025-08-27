@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>We're Taking a Coffee Break</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        .floating { animation: float 3s ease-in-out infinite; }
+        .glow { text-shadow: 0 0 10px rgba(255, 255, 255, 0.8); }
+        .coffee-steam {
+            position: absolute;
+            width: 20px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            filter: blur(5px);
+        }
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #f6d365 0%, #fda085 100%);
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-900 via-purple-900 to-gray-900 min-h-screen flex items-center justify-center text-white p-4 overflow-hidden">
+    <div class="max-w-2xl mx-auto text-center relative z-10">
+        <!-- Coffee Cup with Steam -->
+        <div class="relative mx-auto w-40 h-40 mb-8">
+            <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-32 h-32 bg-gradient-to-b from-amber-100 to-amber-300 rounded-b-full">
+                <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-24 h-6 bg-amber-300 rounded-t-full"></div>
+                <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-20 h-4 bg-amber-200 rounded-t-full"></div>
+                
+                <!-- Coffee Steam -->
+                <div class="coffee-steam" style="top: -20px; left: 30px;"></div>
+                <div class="coffee-steam" style="top: -30px; left: 60px; height: 50px;"></div>
+                <div class="coffee-steam" style="top: -25px; left: 90px;"></div>
+            </div>
+            <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-6 bg-amber-800 rounded-b-full"></div>
+        </div>
+        
+        <h1 class="text-5xl md:text-6xl font-bold mb-6 glow floating">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-400">Oops!</span>
+        </h1>
+        
+        <h2 class="text-3xl md:text-4xl font-semibold mb-6">We're Currently Out of Service</h2>
+        
+        <p class="text-xl mb-8 text-gray-300">
+            Our hamsters are on strike, the coffee machine broke, and our developers are busy 
+            <span class="text-amber-300">arguing about tabs vs spaces</span>. 
+            We'll be back soon(ish)!
+        </p>
+        
+        <div class="mb-8">
+            <div class="flex justify-center space-x-4 mb-4">
+                <div class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-2xl">
+                    <i class="fas fa-cog animate-spin"></i>
+                </div>
+                <div class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-2xl">
+                    <i class="fas fa-mug-hot text-amber-400"></i>
+                </div>
+                <div class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-2xl">
+                    <i class="fas fa-bug text-red-400"></i>
+                </div>
+            </div>
+            
+            <p class="text-sm text-gray-400 italic">Estimated time until we figure things out:</p>
+            <div class="w-full bg-gray-800 rounded-full h-2.5 mt-2 mb-4">
+                <div id="progress" class="progress-bar h-2.5 rounded-full" style="width: 0%"></div>
+            </div>
+            <p id="time-estimate" class="text-amber-300 font-mono">Calculating...</p>
+        </div>
+        
+        <div class="bg-gray-800 bg-opacity-50 rounded-xl p-6 mb-8 border border-gray-700">
+            <h3 class="text-xl font-semibold mb-3 text-amber-200">While You Wait:</h3>
+            <ul class="text-left space-y-2 text-gray-300">
+                <li class="flex items-start">
+                    <span class="text-amber-400 mr-2">•</span>
+                    <span>Take a deep breath and count to 10 (we're on attempt 327)</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="text-amber-400 mr-2">•</span>
+                    <span>Make yourself a coffee (unlike ours, yours might actually work)</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="text-amber-400 mr-2">•</span>
+                    <span>Stare at the loading animation and question life choices</span>
+                </li>
+            </ul>
+        </div>
+        
+        <button id="panic-button" class="px-8 py-3 bg-gradient-to-r from-red-500 to-pink-500 rounded-full font-bold hover:from-red-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg hover:shadow-red-500/30 mb-4">
+            <i class="fas fa-exclamation-triangle mr-2"></i> PANIC BUTTON
+        </button>
+        <p class="text-xs text-gray-500">(Note: Button doesn't actually do anything, but pressing it makes you feel better)</p>
+    </div>
+    
+    <!-- Floating decorative elements -->
+    <div class="absolute top-20 left-10 w-8 h-8 rounded-full bg-purple-500 opacity-20"></div>
+    <div class="absolute bottom-1/4 right-20 w-12 h-12 rounded-full bg-amber-400 opacity-20"></div>
+    <div class="absolute top-1/3 right-1/4 w-6 h-6 rounded-full bg-blue-400 opacity-20"></div>
+    
+    <script>
+        // Animate progress bar
+        let progress = 0;
+        const progressBar = document.getElementById('progress');
+        const timeEstimate = document.getElementById('time-estimate');
+        const panicButton = document.getElementById('panic-button');
+        
+        const funnyEstimates = [
+            "About 3 coffee breaks",
+            "When the planets align",
+            "After this meeting ends (never)",
+            "2^undefined seconds",
+            "When hell freezes over",
+            "Before Half-Life 3 releases",
+            "42",
+            "Soon™"
+        ];
+        
+        const panicMessages = [
+            "PANIC MODE ACTIVATED!",
+            "SYSTEM OVERLOAD!",
+            "ABANDON SHIP!",
+            "THIS IS NOT A DRILL!",
+            "MAYDAY MAYDAY!",
+            "WE'RE ALL GONNA DIE!",
+            "INITIATE SELF-DESTRUCT!",
+            "THE END IS NIGH!"
+        ];
+        
+        // Update progress bar
+        const interval = setInterval(() => {
+            progress += Math.random() * 5;
+            if (progress > 100) {
+                progress = 0;
+                // Change the funny estimate
+                timeEstimate.textContent = funnyEstimates[Math.floor(Math.random() * funnyEstimates.length)];
+            }
+            progressBar.style.width = `${progress}%`;
+        }, 500);
+        
+        // Panic button functionality
+        panicButton.addEventListener('click', () => {
+            const randomMessage = panicMessages[Math.floor(Math.random() * panicMessages.length)];
+            panicButton.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i> ${randomMessage}`;
+            
+            // Add some dramatic effects
+            document.body.classList.add('animate-pulse');
+            setTimeout(() => {
+                document.body.classList.remove('animate-pulse');
+            }, 1000);
+            
+            // Reset button after a delay
+            setTimeout(() => {
+                panicButton.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> PANIC BUTTON';
+            }, 2000);
+        });
+        
+        // Animate coffee steam
+        const animateSteam = () => {
+            const steamElements = document.querySelectorAll('.coffee-steam');
+            steamElements.forEach((steam, index) => {
+                steam.style.opacity = Math.random();
+                steam.style.height = `${30 + Math.random() * 30}px`;
+                steam.style.transform = `translateX(${(Math.random() - 0.5) * 10}px)`;
+            });
+            
+            setTimeout(animateSteam, 2000 + Math.random() * 1000);
+        };
+        
+        animateSteam();
+    </script>
+</body>
+</html>
