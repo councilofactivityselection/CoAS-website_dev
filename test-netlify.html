@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netlify Function Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            margin: 20px auto;
+            width: 200px;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+        }
+        .success {
+            border-left-color: #2ecc71;
+            background: #e8f5e9;
+        }
+        .error {
+            border-left-color: #e74c3c;
+            background: #ffebee;
+        }
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Netlify Function Test</h1>
+        <p>This page tests if your Netlify Functions are working correctly.</p>
+        
+        <button onclick="testFunction()" id="testButton">
+            <span id="buttonText">Test Netlify Function</span>
+        </button>
+        
+        <div id="result" class="result" style="display: none;">
+            <h3>Result:</h3>
+            <pre id="resultContent">Waiting for test results...</pre>
+        </div>
+        
+        <div style="margin-top: 30px; padding: 15px; background: #fff3cd; border-radius: 5px; border-left: 4px solid #ffc107;">
+            <h3>Debugging Tips:</h3>
+            <ul>
+                <li>Make sure your functions are in the <code>netlify/functions</code> directory</li>
+                <li>Check Netlify dashboard for function logs</li>
+                <li>Open browser DevTools to see any console errors</li>
+                <li>Visit <code>https://your-site.netlify.app/.netlify/functions/test</code> directly to test</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        async function testFunction() {
+            const button = document.getElementById('testButton');
+            const buttonText = document.getElementById('buttonText');
+            const resultDiv = document.getElementById('result');
+            const resultContent = document.getElementById('resultContent');
+            
+            // Show loading state
+            button.disabled = true;
+            buttonText.innerHTML = '<div class="loader"></div> Testing...';
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultContent.textContent = 'Testing function...';
+            
+            try {
+                // Test the simple function
+                const response = await fetch('/.netlify/functions/test');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.className = 'result success';
+                    resultContent.textContent = JSON.stringify(data, null, 2);
+                    console.log('Function test successful:', data);
+                } else {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultContent.textContent = `Error: ${error.message}\n\nMake sure:\n1. Your function is in netlify/functions/test.js\n2. You've deployed to Netlify\n3. Check browser console for details`;
+                console.error('Function test failed:', error);
+            } finally {
+                // Reset button state
+                button.disabled = false;
+                buttonText.textContent = 'Test Netlify Function';
+            }
+        }
+        
+        // Test on page load
+        window.addEventListener('load', function() {
+            console.log('Netlify function test page loaded');
+            console.log('Testing function at: /.netlify/functions/test');
+        });
+    </script>
+</body>
+</html>
